@@ -198,6 +198,7 @@ namespace esphome {
 				// No footer in the first part
 
 				// Now the mid message footer
+				usecs.reset();
 				data->mark(GREE_BIT_MARK);
 				data->space(GREE_ZERO_SPACE);
 				data->mark(GREE_BIT_MARK);
@@ -207,7 +208,9 @@ namespace esphome {
 
 				// Message space
 				data->mark(GREE_BIT_MARK);
-				data->space(GREE_MSG_SPACE);
+				// Avoid potential unsigned integer underflow
+				uint32_t elapsed = usecs.elapsed();
+				data->space(std::max(0, GREE_MSG_SPACE - elapsed));
 
 				// No Header for the second part
 
