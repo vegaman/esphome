@@ -210,7 +210,10 @@ namespace esphome {
 				data->mark(GREE_BIT_MARK);
 				// Avoid potential unsigned integer underflow
 				uint32_t elapsed = usecs.elapsed();
-				data->space(std::max(0, GREE_MSG_SPACE - elapsed));
+				if (elapsed > GREE_MSG_SPACE)
+					data->space(0);
+				else
+					data->space(std::max(0, GREE_MSG_SPACE - elapsed));
 
 				// No Header for the second part
 
