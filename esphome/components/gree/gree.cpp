@@ -29,7 +29,7 @@ const uint8_t GREE_TEMP_MAX = 30; // Celsius
 const uint8_t GREE_TIMER_ENABLED_BIT = 0b10000000;
 const uint8_t GREE_TIMER_HALF_HR_BIT = 0b00010000;
 const uint8_t GREE_TIMER_TENS_HR_MASK = 0b01100000;
-const uint8_t GREE_TIMER1_MASK = kGreeTimerTensHrMask | kGreeTimerHalfHrBit;
+const uint8_t GREE_TIMER1_MASK = GREE_TIMER_TENS_HR_MASK | GREE_TIMER_HALF_HR_BIT;
 const uint16_t GREE_TIMER_MAX = 24 * 60;
 
 // Byte 2
@@ -69,7 +69,7 @@ static const uint16_t GREE_MSG_SPACE = 19000;
 static const uint8_t GREE_BLOCK_FOOTER = 0b010;
 static const uint8_t GREE_BLOCK_FOOTER_BITS = 3;
 
-const uint16_t GREE_STATE_LENGTH = 8
+const uint16_t GREE_STATE_LENGTH = 8;
 const uint16_t GREE_BITS = GREE_STATE_LENGTH * 8;
 
 climate::ClimateTraits GreeClimate::traits() {
@@ -134,7 +134,7 @@ void GreeClimate::transmit_state_() {
 	remote_state[6] = 0x0;
 	remote_state[7] = 0x50;
 
-	swith (this->mode) {
+	switch (this->mode) {
 		case climate::CLIMATE_MODE_AUTO:
 			remote_state[0] &= ~GREE_MODE_MASK;
 			remote_state[0] |= GREE_AUTO;
@@ -177,24 +177,26 @@ void GreeClimate::transmit_state_() {
       data->mark(GREE_HEADER_MARK);
       data->space(GREE_HEADER_SPACE);
       // Data
-	  for (int16_t i = 8; i <= GREE_BITS; i += 8) {
-	    data->mark(GREE_BIT_MARK);
-	    bool bit = i & (1 << j);
-	    data->space(bit ? GREE_ONE_SPACE : GREE_ZERO_SPACE);
-        if (i == GREE_BITS / 2) {
-          // Send the mid-message Footer.
-		  data->mark(GREE_BIT_MARK);
-		  data->space(GREE_ZERO_SPACE);
-		  data->mark(GREE_BIT_MARK);
-		  data->space(GREE_ONE_SPACE);
-		  data->mark(GREE_BIT_MARK);
-		  data->space(GREE_ZERO_SPACE);
-		
-		  // Message space
-		  data->mark(GREE_BIT_MARK);
-		  data->space(GREE_MSG_SPACE);
-        }
-      }
+	  for (uint8_t i : remote_state) {
+		  for (uint8_t j = 0; j < GREE_BITS; j++) {
+			data->mark(GREE_BIT_MARK);
+			bool bit = i & (1 << j);
+			data->space(bit ? GREE_ONE_SPACE : GREE_ZERO_SPACE);
+			if (j == GREE_BITS / 2) {
+			  // Send the mid-message Footer.
+			  data->mark(GREE_BIT_MARK);
+			  data->space(GREE_ZERO_SPACE);
+			  data->mark(GREE_BIT_MARK);
+			  data->space(GREE_ONE_SPACE);
+			  data->mark(GREE_BIT_MARK);
+			  data->space(GREE_ZERO_SPACE);
+			
+			  // Message space
+			  data->mark(GREE_BIT_MARK);
+			  data->space(GREE_MSG_SPACE);
+			}
+		  }
+	  }
       // Footer
       data->mark(GREE_BIT_MARK);
       data->space(GREE_MSG_SPACE);  // Pause before repeating
