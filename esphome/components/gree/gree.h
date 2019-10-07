@@ -12,7 +12,7 @@ namespace gree {
 
 using namespace remote_base;
 
-class GreeClimate : public climate::Climate, public Component, public RemoteReceiverListener {
+class GreeClimate : public climate::Climate, public Component {
  public:
   void setup() override;
   void set_transmitter(remote_transmitter::RemoteTransmitterComponent *transmitter) {
