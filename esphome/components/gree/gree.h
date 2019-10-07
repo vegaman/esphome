@@ -31,8 +31,6 @@ class GreeClimate : public climate::Climate, public Component, public RemoteRece
   /// Transmit via IR the state of this climate controller.
   void transmit_state_();
 
-  bool on_receive(RemoteReceiveData data) override;
-
   bool supports_cool_;
   bool supports_heat_;
 
