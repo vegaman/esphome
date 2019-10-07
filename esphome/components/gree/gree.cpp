@@ -210,10 +210,11 @@ namespace esphome {
 				data->mark(GREE_BIT_MARK);
 				// Avoid potential unsigned integer underflow
 				uint32_t now = micros();
+				uint32_t elapsed;
 				if (start <= now)
-					uint32_t elapsed = now - start;
+					elapsed = now - start;
 				else
-					uint32_t elapsed = UINT32_MAX - start + now;
+					elapsed = UINT32_MAX - start + now;
 				if (elapsed > GREE_MSG_SPACE)
 					data->space(0);
 				else
