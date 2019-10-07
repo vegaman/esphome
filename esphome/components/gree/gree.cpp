@@ -216,9 +216,9 @@ namespace esphome {
 				else
 					elapsed = UINT32_MAX - start + now;
 				if (elapsed > GREE_MSG_SPACE)
-					data->space(0);
+					data->space(0U);
 				else
-					data->space(std::max(0, GREE_MSG_SPACE - elapsed));
+					data->space(std::max(0U, GREE_MSG_SPACE - elapsed));
 
 				// No Header for the second part
 
