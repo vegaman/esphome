@@ -13,7 +13,9 @@ namespace esphome {
 		const uint8_t GREE_HEAT = 4;
 
 		//byte 0
+		// this mask should be good
 		const uint8_t GREE_MODE_MASK = 0b00000111;
+		// this mask should be good
 		const uint8_t GREE_POWER1_MASK = 0b00001000;
 		const uint8_t GREE_FAN_MASK = 0b00110000;
 		const uint8_t GREE_FAN_AUTO = 0;
@@ -23,6 +25,7 @@ namespace esphome {
 		const uint8_t GREE_SWING_AUTO_MASK = 0b01000000;
 		const uint8_t GREE_SLEEP_MASK = 0b10000000;
 		//byte 1
+		// this mask should be good, just have to work out how to use it right
 		const uint8_t GREE_TEMP_MASK = 0b00001111;
 		const uint8_t GREE_TEMP_MIN = 16; // Celsius
 		const uint8_t GREE_TEMP_MAX = 30; // Celsius
@@ -37,6 +40,7 @@ namespace esphome {
 		const uint8_t GREE_TURBO_MASK = 0b00010000;
 		const uint8_t GREE_LIGHT_MASK = 0b00100000;
 		// This might not be used
+		// this mask should be good
 		const uint8_t GREE_POWER2_MASK = 0b01000000;
 		const uint8_t GREE_X_FAN_MASK = 0b10000000;
 		// Byte 4
@@ -137,15 +141,16 @@ namespace esphome {
 			switch (this->mode) {
 				case climate::CLIMATE_MODE_AUTO:
 					remote_state[0] &= ~GREE_MODE_MASK;
-					remote_state[0] |= GREE_AUTO;
+					remote_state[0] |= GREE_AUTO & GREE_MODE_MASK;
 					break;
 				case climate::CLIMATE_MODE_COOL:
 					remote_state[0] &= ~GREE_MODE_MASK;
-					remote_state[0] |= GREE_COOL;
+					remote_state[0] |= GREE_COOL & GREE_MODE_MASK;
 					break;
 				case climate::CLIMATE_MODE_HEAT:
+					// start by clearing the destination bitset
 					remote_state[0] &= ~GREE_MODE_MASK;
-					remote_state[0] |= GREE_HEAT;
+					remote_state[0] |= GREE_HEAT & GREE_MODE_MASK;
 					break;
 				case climate::CLIMATE_MODE_OFF:
 				default:
@@ -160,8 +165,10 @@ namespace esphome {
 			// Set temperature
 			uint8_t safecelsius = std::max((uint8_t) this->target_temperature, GREE_TEMP_MIN);
 			safecelsius = std::min(safecelsius, GREE_TEMP_MAX);
-			remote_state[1] = (remote_state[1] & ~GREE_TEMP_MASK) |
-				(safecelsius - GREE_TEMP_MIN);
+			// start by clearing the destination bitset
+			remote_state[1] &= ~GREE_TEMP_MASK;
+			// now merge in the data
+			remote_state[1] |= ((safecelsius - GREE_TEMP_MIN) & GREE_TEMP_MASK);
 
 			auto transmit = this->transmitter_->transmit();
 			auto data = transmit.get_data();
