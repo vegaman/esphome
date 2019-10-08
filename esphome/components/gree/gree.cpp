@@ -148,9 +148,13 @@ namespace esphome {
 					remote_state[0] |= GREE_COOL & GREE_MODE_MASK;
 					break;
 				case climate::CLIMATE_MODE_HEAT:
-					// start by clearing the destination bitset
+				    // Set power on
+				    remote_state[0] |= GREE_POWER1_MASK;
+					remote_state[2] |= GREE_POWER2_MASK;
+					// start by clearing the destination bits
 					remote_state[0] &= ~GREE_MODE_MASK;
-					remote_state[0] |= GREE_HEAT & GREE_MODE_MASK;
+					// set the heat mode
+					remote_state[0] |= GREE_HEAT;
 					break;
 				case climate::CLIMATE_MODE_OFF:
 				default:
@@ -166,9 +170,10 @@ namespace esphome {
 			uint8_t safecelsius = std::max((uint8_t) this->target_temperature, GREE_TEMP_MIN);
 			safecelsius = std::min(safecelsius, GREE_TEMP_MAX);
 			// start by clearing the destination bitset
-			remote_state[1] &= ~GREE_TEMP_MASK;
+			//remote_state[1] &= ~GREE_TEMP_MASK;
 			// now merge in the data
-			remote_state[1] |= ((safecelsius - GREE_TEMP_MIN) & GREE_TEMP_MASK);
+			//remote_state[1] |= ((safecelsius - GREE_TEMP_MIN) & GREE_TEMP_MASK);
+			remote_state[1] = (remote_state[1] & ~GREE_TEMP_MASK) | (safecelsius - GREE_TEMP_MIN);
 
 			auto transmit = this->transmitter_->transmit();
 			auto data = transmit.get_data();
@@ -190,6 +195,8 @@ namespace esphome {
 				// Start with the first 4 bytes
 				for (uint8_t i = 0; i < 4; i++) {
 					uint8_t content = remote_state[i];
+					
+					ESP_LOGD(TAG, "Sending byte %u: " content);
 
 					// Data
 					for (uint8_t bit = 0; bit < 8; bit++, content >>= 1) {
